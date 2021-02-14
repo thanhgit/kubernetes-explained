@@ -7,6 +7,11 @@ kubeadm version
 kubeadm version: &version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-13T13:25:59Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
 ```
 
+## Get join node command
+```bash
+kubeadm token create --print-join-command
+```
+
 ## Check upgrade plan
 ```bash
 kubeadm upgrade plan
