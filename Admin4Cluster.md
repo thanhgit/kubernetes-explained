@@ -10,6 +10,8 @@ kubeadm version: &version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitC
 ## Get join node command
 ```bash
 kubeadm token create --print-join-command
+---
+kubeadm join 192.168.1.40:6443 --token xxx --discovery-token-ca-cert-hash sha256:yyy
 ```
 
 ## Check upgrade plan
