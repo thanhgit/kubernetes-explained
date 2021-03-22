@@ -21,13 +21,76 @@
     - Controller manager: run controllers
     - Distributed storage: such as etcd (a global variable configuration store)
 
+### Kube-proxy
+- Kube-proxy is a network proxy that runs on each node in the cluster
+- Source NAT is used for pods to communicate to external world
+- IPtables are used extensively for load balancing and NAT
+
+### Network control policy
+- It controls communication between `Pods` and `Services`
+- Network plugins like Calico, WeaveNet support network policies
+ 
+#### Example 1: reviews service allow from product service
+![](media/example1_network_control_policy.png)
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: reviews-allow-from-product
+spec:
+  policyTypes:
+  - Ingress
+  podSelector:
+    matchLabels:
+      app: reviews
+  ingress:
+  - from:
+    - podSelector:
+      matchLabels:
+        app: productpage
+```
+
+#### Example 2: reviews service prohibit all traffic
+![](media/example2_network_control_policy.png)
+```yaml
+apiVersion: network.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: reviews-prohibit-all-traffic
+spec:
+  policyTypes:
+  - Ingress
+  podSelector:
+    matchLabels:
+      app: reviews
+  ingress: []
+```
+### DNS
+- Service discovery achieved by SkyDNS
+- SkyDNS runs as a pod in the cluster
+![](media/sky_dns.png)
+
 ## Kubernetes building block
 ### POD
-- A pod is the smallest deployable unit that is managed by kubernetes
-- It is a logical group of one or more containers that share the same IP address and its local cache
+- Every pod has a unique IP
+- Share same namespace and volume, lifecycle => like "logical host"
 - Containers within pod communicate with each other using standard inter-process communication like SystemV semaphores or POSIX share memory
-- Like "logical host"
+- Use cases for multi-containers pods-sidecars, proxies/adapters
 
+#### Single pod networking
+![](media/single_pod_network.png)
+
+#### Kubernetes networking overview
+![](media/kubernetes_network_overview.png)
+
+- L2 approach
+![](media/l2_kubernetes_network.png)
+
+- L3 approach
+![](media/l3_kubernetes_network.png)
+
+- Overlay approach
+![](media/overlay_kubernetes_network.png)
 ### LABEL
 - It is a key/value pair that is attached to kubernetes resource
 
@@ -52,10 +115,94 @@
 
 ### Service
 - A service uses a selector to define a logical group of pods and defines a policy to access 
+- Services provide a stable VIP, it automatically routes to backend pods
+- VIP to backend pod mapping is managed by kube-proxy, implemented using iptables
 - There are several types of services such as ClusterIP, NodePort and LoadBalancer
-    - ClusterIP exposes pods in cluster
-    - NodePort exposes pods to external traffic by forwarding traffic from a port on each node to the container port
+    - ClusterIP exposes pods in cluster (default)
+    - NodePort exposes pods to external traffic by forwarding traffic from a `static port` on each node to the container port. Using `<NodeIP>:<NodePort>` to access
     - LoadBalancer exposes pods to external traffic as NodePort, however it also provides a load balancer
+    - ExternalName: maps the service to the contents of the `externalname` field (`api.sewardnguye.com`), by returning a `CNAME` record with its value. No proxing of any kind is set up(kube-dns >= 1.7, coreDNS >= 0.0.8)
+    ![](media/overview_kubernetes_network.png)
+- Template
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-svc
+spec:
+  selector:
+    app: my-svc
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+```
+- Note: A service can map any `incomming port` to a `target port`
+
+- Delve into `NodePort`
+![](media/nodeport_kubernetes_network.png)
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-svc
+  labels:
+    app: my-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 9080
+  selector:
+    app: my-svc
+```
+
+- Delve into `LoadBalancer`
+![](media/loadbalancer_kubernetes_network.png)
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-svc
+  labels:
+    app: my-svc
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 9080
+  selector:
+    app: my-svc
+```
+
+- Delve into `Ingress Controller`
+![](media/ingress_kubernetes_network.png)
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gateway
+spec:
+  backend:
+    serviceName: productpage
+    servicePort: 9080
+  rules:
+  - host: mydomain.com
+    http:
+      paths:
+      - path: /productpage
+        backend:
+          serviceName: productpage
+          servicePort: 9080
+      - path: /login
+        backend:
+          serviceName: productpage
+          servicePort: 9080
+      - path: /*
+        backend:
+          serviceName: productpage
+          servicePort: 9080
+```
 
 ### Volume
 - A volume is defined at the pod level and is used to preserve data across container crashes
