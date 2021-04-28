@@ -22,7 +22,8 @@
     - Distributed storage: such as etcd (a global variable configuration store)
 
 ### Kube-proxy
-- Kube-proxy is a network proxy that runs on each node in the cluster
+- Kube-proxy is a network proxy that runs on each node in the cluster, it allows the `service` to map traffic from one port to another
+- It configures the Netfilter rules on all of the nodes according to the Service's definition in the API server. From kubernetes 1.9 onward it uses the `netlink interface` to create IPVS rules. These rules direct traffic to the appropriate Pod
 - Source NAT is used for pods to communicate to external world
 - IPtables are used extensively for load balancing and NAT
 
