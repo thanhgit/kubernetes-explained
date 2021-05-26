@@ -1,5 +1,8 @@
 # Administer a cluster
 
+## Upgrade kubernetes 
+- https://thenewstack.io/living-with-kubernetes-cluster-upgrades/
+
 ## Check version
 ```bash
 kubeadm version
@@ -90,6 +93,13 @@ CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANA
 ca                      Feb 06, 2031 10:25 UTC   9y              no      
 etcd-ca                 Feb 06, 2031 10:25 UTC   9y              no      
 front-proxy-ca          Feb 06, 2031 10:25 UTC   9y              no    
+```
+
+## Check status of `control plane components`
+```bash
+kubectl get componentstatuses
+---
+
 ```
 
 ## Dependency on Docker explained

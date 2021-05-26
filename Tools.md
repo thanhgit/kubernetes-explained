@@ -100,3 +100,23 @@ Filesystem                 Size  Used Avail Use% Mounted on
 ```
 
 - [Reference](https://www.howtoforge.com/nfs-server-and-client-on-centos-7)
+
+## Utils
+### Get pods with custom columns
+```bash
+kubectl get po -o custom-columns=POD:metadata.name,NODE:spec.nodeName -n kube-system
+---
+POD                              NODE
+coredns-74ff55c5b-gjq5x          master
+coredns-74ff55c5b-srh74          master
+etcd-master                      master
+kube-apiserver-master            master
+kube-controller-manager-master   master
+kube-flannel-ds-cqzmp            master
+kube-flannel-ds-rlc2r            server1
+kube-flannel-ds-v926r            server2
+kube-proxy-25z5b                 server1
+kube-proxy-js25w                 server2
+kube-proxy-n4m8f                 master
+kube-scheduler-master            master
+```
