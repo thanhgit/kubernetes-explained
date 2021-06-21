@@ -65,7 +65,7 @@ kubectl config set-context $(kubectl config current-context) -n openebs
 helm install --namespace openebs --name openebs stable/openebs --version 1.4.0
 ```
 
-## Install with kubecl
+## Install with kubectl
 ```bash
 kubectl apply -f https://openebs.github.io/charts/openebs-operator-1.4.0.yaml
 ```
